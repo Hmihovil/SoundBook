@@ -81,8 +81,15 @@ public class PocketSphinxActivity extends Activity implements RecognitionListene
         super.onCreate(state);
         setContentView(R.layout.main);
 
-        // add default 'thunder' keysound
-        addDefaultKeySound();
+        // add default keysounds
+        addDefaultKeySound("storm is coming", "thunder");
+        addDefaultKeySound("everyone applauded", "applause");
+        addDefaultKeySound("crickets", "crickets");
+        addDefaultKeySound("crowd laughing", "crowd_laughing");
+        addDefaultKeySound("ringed the door bell", "door_bell");
+        addDefaultKeySound("building a table", "hammering");
+        addDefaultKeySound("received a call", "phone_ringing");
+        addDefaultKeySound("birds and monkeys", "birds_and_monkeys");
 
         ListView mList = (ListView) findViewById(R.id.list);
         mList.setAdapter(mAdapter);
@@ -176,7 +183,7 @@ public class PocketSphinxActivity extends Activity implements RecognitionListene
                 if (last >= 0) {
                     key = key.substring(0, last);
                 }
-                if (text.equals(key)) {
+                if (text.indexOf(key) >= 0) {
                     Log.i(TAG, "Playing sound");
                     playSound(keyword);
                     listen();
@@ -286,10 +293,9 @@ public class PocketSphinxActivity extends Activity implements RecognitionListene
         dialog.show();
     }
 
-    // one-time use only
-    private void addDefaultKeySound() {
-        String keyword = DEFAULT_KEYWORD + calculateThreshold(DEFAULT_KEYWORD) + "\n";
-        saveKeySound(keyword, "");
+    private void addDefaultKeySound(String s, String filename) {
+        String keyword = s + calculateThreshold(s) + "\n";
+        saveKeySound(keyword, filename);
     }
 
     private void chooseKeySound(String keyword) {
@@ -320,8 +326,9 @@ public class PocketSphinxActivity extends Activity implements RecognitionListene
 
     private void playSound(String keyword) {
         String uriStr = mAdapter.get(keyword);
-        if (uriStr == null || uriStr.equals("")) {
-            MediaPlayer mediaPlayer= MediaPlayer.create(this, R.raw.thunder);
+        if (!uriStr.contains("//")) {
+            int resID = getResources().getIdentifier(uriStr, "raw", getPackageName());
+            MediaPlayer mediaPlayer = MediaPlayer.create(this, resID);
             mediaPlayer.start();
         } else {
             Uri uri = Uri.parse(uriStr);
@@ -370,7 +377,7 @@ public class PocketSphinxActivity extends Activity implements RecognitionListene
 
     private String calculateThreshold(String key) {
         final int max = 5;
-        final int mult = 3;
+        final int mult = 5;
         int n = 1;
         int len = key.length();
 
